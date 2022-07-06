@@ -2,7 +2,6 @@ package repository
 
 import (
 	"clinic/models"
-	"errors"
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
@@ -55,27 +54,31 @@ func (c *appointmentrepositoryImpl) Adel(id int) error {
 
 func (c *appointmentrepositoryImpl) Ains(app *models.Appointment) error {
 
-	if app.Duration < 15 || app.Duration > 120 {
-		return errors.New("invalid duration")
-	}
-	doctor := models.User{}
-	cmd := fmt.Sprintf("SELECT username, password, user_type FROM users WHERE id = %v", app.DocId)
-	err := c.db.Get(&doctor, cmd)
+	// doctorc1 := models.User{}
+	// cmd := fmt.Sprintf("SELECT username, password, user_type FROM users WHERE id = %v", app.DocId)
+	// err := c.db.Get(&doctorc1, cmd)
+	// if err != nil {
+	// 	// handle error
+	// 	fmt.Println(err)
+	// 	panic(err)
+	// }
+	// if doctorc1.Type != "doctor" {
+	// 	return errors.New("invalid doctor")
+	// }
+	doctorc2 := models.Available{}
+	cmd := fmt.Sprintf("SELECT doc_id, COUNT(doc_id) as appointments, SUM(durationmins) as appointment_time FROM apps WHERE doc_id = %v GROUP BY doc_id HAVING COUNT(doc_id) < 12 AND SUM(durationmins) < 480", app.DocId)
+	err := c.db.Get(&doctorc2, cmd)
 	if err != nil {
 		// handle error
 		fmt.Println(err)
-		panic(err)
+		return err
 	}
-	if doctor.Type != "doctor" {
-		return errors.New("invalid doctor")
-	}
-
 	cmd = fmt.Sprintf("INSERT INTO apps(durationmins, doc_id, pat_id) values (%v, %v, %v)", app.Duration, app.DocId, app.PatId)
 	_, err = c.db.Exec(cmd)
 	if err != nil {
 		// handle error
 		fmt.Println(err)
-		panic(err)
+		return err
 	}
 	return err
 

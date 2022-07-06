@@ -3,6 +3,7 @@ package services
 import (
 	"clinic/models"
 	"clinic/repository"
+	"errors"
 )
 
 type AppointmentService interface {
@@ -63,6 +64,9 @@ func (c *appointmentServiceImpl) MostApps() ([]models.Mostapps, error) {
 }
 
 func (c *appointmentServiceImpl) Book(app models.Appointment) error {
+	if app.Duration < 15 || app.Duration > 120 {
+		return errors.New("invalid duration")
+	}
 	return c.ar.Ains(&app)
 
 }
