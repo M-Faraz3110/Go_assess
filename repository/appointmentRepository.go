@@ -32,7 +32,9 @@ func AppointmentRepositoryProvider(db *sqlx.DB) AppointmentRepository {
 
 func (c *appointmentrepositoryImpl) Asel(app *models.Appointment, id int) error {
 	cmd := fmt.Sprintf("SELECT doc_id, durationmins, pat_id FROM apps WHERE id = %v", id)
-	return c.db.Select(app, cmd)
+	err := c.db.Get(app, cmd)
+	fmt.Println(err)
+	return err
 }
 
 func (c *appointmentrepositoryImpl) Aselall(app *[]models.Appointment, id int) error {
