@@ -1,6 +1,7 @@
 package api
 
 import (
+	"clinic/auth"
 	"clinic/middle"
 	"clinic/services"
 	"fmt"
@@ -83,19 +84,39 @@ func (c *doctorControllerImpl) GetDoctors(ctx *gin.Context) {
 }
 
 func (c *doctorControllerImpl) GetAvail(ctx *gin.Context) {
-	if res, err := c.svc.Avail(); err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
-	} else {
-		ctx.JSON(http.StatusOK, res)
+	tokenString := ctx.GetHeader("Authorization")
+	claims, err := auth.GetClaims(tokenString)
+	if err != nil {
+		// handle error
+		fmt.Println(err)
+		panic(err)
+	}
+	fmt.Println(claims)
+	if claims.Utype == "admin" {
+		if res, err := c.svc.Avail(); err != nil {
+			ctx.JSON(http.StatusBadRequest, err)
+		} else {
+			ctx.JSON(http.StatusOK, res)
+		}
 	}
 	// RETURN OTHER Status
 }
 
 func (c *doctorControllerImpl) GetSix(ctx *gin.Context) {
-	if res, err := c.svc.SixHours(); err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
-	} else {
-		ctx.JSON(http.StatusOK, res)
+	tokenString := ctx.GetHeader("Authorization")
+	claims, err := auth.GetClaims(tokenString)
+	if err != nil {
+		// handle error
+		fmt.Println(err)
+		panic(err)
+	}
+	fmt.Println(claims)
+	if claims.Utype == "admin" {
+		if res, err := c.svc.SixHours(); err != nil {
+			ctx.JSON(http.StatusBadRequest, err)
+		} else {
+			ctx.JSON(http.StatusOK, res)
+		}
 	}
 	// RETURN OTHER Status
 }

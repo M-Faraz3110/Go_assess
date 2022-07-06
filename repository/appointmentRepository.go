@@ -59,7 +59,6 @@ func (c *appointmentrepositoryImpl) Ains(app *models.Appointment) error {
 		return errors.New("invalid duration")
 	}
 	doctor := models.User{}
-	fmt.Println(app.DocId)
 	cmd := fmt.Sprintf("SELECT username, password, user_type FROM users WHERE id = %v", app.DocId)
 	err := c.db.Get(&doctor, cmd)
 	if err != nil {
@@ -67,7 +66,6 @@ func (c *appointmentrepositoryImpl) Ains(app *models.Appointment) error {
 		fmt.Println(err)
 		panic(err)
 	}
-	fmt.Println(doctor)
 	if doctor.Type != "doctor" {
 		return errors.New("invalid doctor")
 	}

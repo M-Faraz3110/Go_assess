@@ -1,6 +1,7 @@
 package api
 
 import (
+	"clinic/auth"
 	"clinic/middle"
 	"clinic/models"
 	"clinic/services"
@@ -73,17 +74,33 @@ func (c *appointmentControllerImpl) GetSlots(ctx *gin.Context) {
 }
 
 func (c *appointmentControllerImpl) CreateAppointment(ctx *gin.Context) {
-	var request models.Appointment
-	if err := ctx.BindJSON(&request); err != nil {
-		// DO SOMETHING WITH THE ERROR
+	tokenString := ctx.GetHeader("Authorization")
+	claims, err := auth.GetClaims(tokenString)
+	if err != nil {
+		// handle error
 		fmt.Println(err)
 		panic(err)
 	}
-	if err := c.svc.Book(request); err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
+	fmt.Println(claims)
+	if claims.Utype == "patient" {
+		var request models.Appointment
+		if err := ctx.BindJSON(&request); err != nil {
+			// DO SOMETHING WITH THE ERROR
+			fmt.Println(err)
+			panic(err)
+		}
+		if request.PatId != claims.ID {
+			ctx.JSON(http.StatusOK, "Incorrect Pat ID")
+		} else if err := c.svc.Book(request); err != nil {
+			ctx.JSON(http.StatusBadRequest, err)
+		} else {
+			ctx.JSON(http.StatusOK, "SUCCESS")
+		}
+
 	} else {
-		ctx.JSON(http.StatusOK, "SUCCESS")
+		ctx.JSON(http.StatusOK, "INSUFFICIENT PERMISSIONS")
 	}
+
 	// RETURN OTHER Status
 }
 

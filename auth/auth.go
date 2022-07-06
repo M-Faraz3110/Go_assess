@@ -11,12 +11,12 @@ var jwtKey = []byte("supersecretkey")
 
 type JWTClaim struct {
 	Username string `json:"username"`
-	ID       string `json:"id"`
-	Utype    string `json:"utype"`
+	ID       int    `json:"id"`
+	Utype    string `json:"type"`
 	jwt.StandardClaims
 }
 
-func GenerateJWT(username string, id string, utype string) (tokenString string, err error) {
+func GenerateJWT(username string, id int, utype string) (tokenString string, err error) {
 	expirationTime := time.Now().Add(1 * time.Hour)
 	claims := &JWTClaim{
 		ID:       id,
@@ -55,7 +55,7 @@ func ValidateToken(signedToken string) (err error) {
 
 func GetClaims(signedToken string) (claims *JWTClaim, err error) {
 	token, err := jwt.ParseWithClaims(
-		signedToken,
+		signedToken[7:],
 		&JWTClaim{},
 		func(token *jwt.Token) (interface{}, error) {
 			return []byte(jwtKey), nil
