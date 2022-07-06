@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"clinic/middle"
 	"clinic/models"
 	"fmt"
 
@@ -8,7 +9,8 @@ import (
 )
 
 type UserRepository interface {
-	UserIns(user *models.Register) error
+	UserIns(user *models.User) error
+	UserSel(user *models.User) (string, error)
 }
 
 type userrepositoryImpl struct {
@@ -23,8 +25,13 @@ func UserRepositoryProvider(db *sqlx.DB) UserRepository {
 }
 
 //=============================================	 	SVC Functions		========================================================
-func (c *userrepositoryImpl) UserIns(user *models.Register) error {
-	cmd := fmt.Sprintf("INSERT INTO %s (username, password) values ('%s', '%s')", user.Type, user.Username, user.Password)
+func (c *userrepositoryImpl) UserIns(user *models.User) error {
+	cmd := fmt.Sprintf("INSERT INTO users (username, password, user_type) values ('%s', '%s', '%s')", user.Username, user.Password, user.Type)
 	_, err := c.db.Exec(cmd)
 	return err
+}
+
+func (c *userrepositoryImpl) UserSel(user *models.User) (string, error) {
+	token, err := middle.GenerateToken(user, c.db)
+	return token, err
 }

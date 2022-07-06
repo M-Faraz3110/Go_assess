@@ -46,10 +46,10 @@ func AppointmentControllerProvider(s services.AppointmentService) AppointmentCon
 func (c *appointmentControllerImpl) SetupRoutes(r *gin.RouterGroup) { //(c *appointmentControllerImpl) means that we are making a function of the type appointmentControllerImpl to access the files in your struct like so c.svc.whatever()
 	r.Use(middle.Auth())
 	r.GET("/doctor/:id/slots", c.GetSlots)
-	r.GET("/app/:appid", c.GetSlots)
+	r.GET("/app/:id", c.GetSlots)
 	r.POST("/book", c.CreateAppointment)
-	r.DELETE("/cancel/:appid", c.CancelAppointment)
-	r.GET("/history/:id", c.History)
+	r.DELETE("/cancel/:id", c.CancelAppointment)
+	// r.GET("/history/:id", c.History)
 	//c.JSON()
 }
 

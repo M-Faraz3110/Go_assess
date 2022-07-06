@@ -3,6 +3,7 @@ package services
 import (
 	"clinic/models"
 	"clinic/repository"
+	"fmt"
 )
 
 type DoctorService interface {
@@ -44,6 +45,7 @@ func (c *doctorServiceImpl) Doctors() ([]models.Doctor, error) {
 func (c *doctorServiceImpl) Avail() ([]models.Available, error) {
 	docs := []models.Available{}
 	c.dr.Davail(&docs)
+	fmt.Println(docs)
 	return docs, nil
 }
 

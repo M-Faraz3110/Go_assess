@@ -6,7 +6,8 @@ import (
 )
 
 type UserService interface {
-	Register(models.Register) error
+	Register(models.User) error
+	Login(request models.User) (string, error)
 }
 
 type userServiceImpl struct {
@@ -22,7 +23,12 @@ func UserServiceProvider(ur repository.UserRepository) UserService {
 
 //=============================================	 	SVC Functions		========================================================
 
-func (c *userServiceImpl) Register(request models.Register) error {
+func (c *userServiceImpl) Register(request models.User) error {
 
 	return c.ur.UserIns(&request)
+}
+
+func (c *userServiceImpl) Login(request models.User) (string, error) {
+
+	return c.ur.UserSel(&request)
 }

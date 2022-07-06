@@ -32,6 +32,10 @@ func AppointmentServiceProvider(ar repository.AppointmentRepository) Appointment
 func (c *appointmentServiceImpl) Slots(id int) ([]models.Appointment, error) {
 	slots := []models.Appointment{}
 	c.ar.Aslots(&slots, id)
+	sleft := 12 - len(slots)
+	for i := 0; i < sleft; i++ {
+		slots = append(slots, models.Appointment{})
+	}
 	return slots, nil
 
 }
@@ -59,7 +63,6 @@ func (c *appointmentServiceImpl) MostApps() ([]models.Mostapps, error) {
 }
 
 func (c *appointmentServiceImpl) Book(app models.Appointment) error {
-
 	return c.ar.Ains(&app)
 
 }

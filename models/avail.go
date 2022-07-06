@@ -1,6 +1,7 @@
 package models
 
 type Available struct {
-	Username  string `db:"username"`
-	Time_Left string `db:"time_left"`
+	Id               string `db:"doc_id"`
+	Appointments     string `db:"appointments"`
+	Appointment_time string `db:"appointment_time"`
 }
