@@ -34,7 +34,7 @@ func DoctorRepositoryProvider(db *sqlx.DB) DoctorRepository {
 func (c *doctorrepositoryImpl) Dsel(doctor *models.Doctor, id int) error {
 	cmd := fmt.Sprintf("SELECT id, username FROM doctors WHERE id = %v", id)
 	fmt.Println(cmd)
-	return c.db.Select(doctor, cmd)
+	return c.db.Get(doctor, cmd)
 }
 
 func (c *doctorrepositoryImpl) Dselall(doctors *[]models.Doctor) error {
