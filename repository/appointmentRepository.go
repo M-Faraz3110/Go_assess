@@ -65,9 +65,22 @@ func (c *appointmentrepositoryImpl) Ains(app *models.Appointment) error {
 	// if doctorc1.Type != "doctor" {
 	// 	return errors.New("invalid doctor")
 	// }
+	doctorc1 := models.Available{}
+	cmd := fmt.Sprintf("SELECT doc_id from apps WHERE doc_id = %v", app.DocId)
+	err := c.db.Get(&doctorc1, cmd)
+	if err != nil {
+		cmd = fmt.Sprintf("INSERT INTO apps(durationmins, doc_id, pat_id) values (%v, %v, %v)", app.Duration, app.DocId, app.PatId)
+		_, err = c.db.Exec(cmd)
+		if err != nil {
+			// handle error
+			fmt.Println(err)
+			return err
+		}
+		return err
+	}
 	doctorc2 := models.Available{}
-	cmd := fmt.Sprintf("SELECT doc_id, COUNT(doc_id) as appointments, SUM(durationmins) as appointment_time FROM apps WHERE doc_id = %v GROUP BY doc_id HAVING COUNT(doc_id) < 12 AND SUM(durationmins) < 480", app.DocId)
-	err := c.db.Get(&doctorc2, cmd)
+	cmd = fmt.Sprintf("SELECT doc_id, COUNT(doc_id) as appointments, SUM(durationmins) as appointment_time FROM apps WHERE doc_id = %v GROUP BY doc_id HAVING COUNT(doc_id) < 12 AND SUM(durationmins) < 480", app.DocId)
+	err = c.db.Get(&doctorc2, cmd)
 	if err != nil {
 		// handle error
 		fmt.Println(err)

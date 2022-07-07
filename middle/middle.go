@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type TokenRequest struct {
@@ -18,6 +19,7 @@ type TokenRequest struct {
 type user struct {
 	Username string `json:"username"`
 	Type     string `json:"type"`
+	Password string `json:"password"`
 	Id       int    `json:"id"`
 }
 
@@ -39,6 +41,11 @@ func Auth() gin.HandlerFunc {
 	}
 }
 
+func HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return string(bytes), err
+}
+
 func GenerateToken(request *models.User, db *sqlx.DB) (string, error) {
 	// var request TokenRequest
 	// if err := context.ShouldBindJSON(&request); err != nil {
@@ -49,13 +56,23 @@ func GenerateToken(request *models.User, db *sqlx.DB) (string, error) {
 	// check if email exists and password is correct
 	user := user{}
 	fmt.Println(request.Type)
-	cmd := fmt.Sprintf("SELECT username, id, user_type as type FROM users WHERE username = '%s' and password = '%s' and user_type = '%s'", request.Username, request.Password, request.Type)
-	err := db.Get(&user, cmd)
+	hashpass, err := HashPassword(request.Password)
 	if err != nil {
 		fmt.Println(err)
 		return "", err
 	}
-
+	fmt.Println(hashpass)
+	cmd := fmt.Sprintf("SELECT username, password, id, user_type as type FROM users WHERE username = '%s' and user_type = '%s'", request.Username, request.Type)
+	err = db.Get(&user, cmd)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password))
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
 	tokenString, err := auth.GenerateJWT(user.Username, user.Id, user.Type)
 	if err != nil {
 		// context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
