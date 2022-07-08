@@ -43,7 +43,7 @@ func (c *appointmentServiceImpl) Slots(id int) ([]models.Appointment, error) {
 	// 	End_time:   slots[0].Start_time,
 	// }
 	// res = append(res, slot)
-	for k, _ := range slots {
+	for k := range slots {
 		slot = models.Appointment{
 			DocId:      slots[k].DocId,
 			PatId:      slots[k].PatId,
