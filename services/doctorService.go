@@ -4,13 +4,16 @@ import (
 	"clinic/models"
 	"clinic/repository"
 	"fmt"
+	"strconv"
+	"time"
 )
 
 type DoctorService interface {
 	Doctor(id int) (models.Doctor, error)
 	Doctors() ([]models.Doctor, error)
+	MostApps() ([]models.Mostapps, error)
 	Avail() ([]models.Available, error)
-	SixHours() ([]models.Available, error)
+	SixHours() ([]models.Doctor, error)
 }
 
 type doctorServiceImpl struct {
@@ -44,13 +47,55 @@ func (c *doctorServiceImpl) Doctors() ([]models.Doctor, error) {
 
 func (c *doctorServiceImpl) Avail() ([]models.Available, error) {
 	docs := []models.Available{}
-	c.dr.Davail(&docs)
-	fmt.Println(docs)
+	ids := []int{}
+	c.dr.Distinct(&ids)
+	times := []models.Times{}
+	fmt.Println(ids)
+	for k, _ := range ids {
+		avail := []models.Times{}
+		avail = append(avail, models.Times{
+			Start_time: time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 9, 0, 0, 0, time.Local),
+			End_time:   time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 17, 0, 0, 0, time.Local),
+		})
+		c.dr.Davail(&times, ids[k])
+		for k, _ := range times {
+
+			avail[len(avail)-1].End_time = times[k].Start_time
+			if avail[len(avail)-1].Start_time == avail[len(avail)-1].End_time {
+				avail = avail[:len(avail)-1]
+			}
+			avail = append(avail, models.Times{
+				Start_time: times[k].End_time,
+				End_time:   time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 17, 0, 0, 0, time.Local),
+			})
+
+		}
+		docs = append(docs, models.Available{
+			Id:    strconv.Itoa(ids[k]),
+			Times: avail,
+		})
+	}
 	return docs, nil
 }
 
-func (c *doctorServiceImpl) SixHours() ([]models.Available, error) {
-	docs := []models.Available{}
+// func (c *doctorServiceImpl) Avail() ([]models.Available, error) {
+// 	res := []models.Available{}
+// 	docs := []models.Available{}
+// 	// now := time.Now()
+// 	c.dr.Davail(&docs)
+// 	fmt.Println(docs)
+
+// 	return res, nil
+// }
+
+func (c *doctorServiceImpl) SixHours() ([]models.Doctor, error) {
+	docs := []models.Doctor{}
 	c.dr.Dsixhours(&docs)
+	return docs, nil
+}
+
+func (c *doctorServiceImpl) MostApps() ([]models.Mostapps, error) {
+	docs := []models.Mostapps{}
+	c.dr.DMostApps(&docs)
 	return docs, nil
 }

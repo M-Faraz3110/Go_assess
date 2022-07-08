@@ -16,6 +16,7 @@ type DoctorController interface {
 	GetDoctors(c *gin.Context)
 	GetAvail(c *gin.Context)
 	GetSix(c *gin.Context)
+	GetMostApps(c *gin.Context)
 
 	/*
 		This is where you would add your controller's routes. like this:
@@ -51,6 +52,7 @@ func (c *doctorControllerImpl) SetupRoutes(r *gin.RouterGroup) { //(c *appointme
 	r.GET("/doctors", c.GetDoctors)
 	r.GET("/availability", c.GetAvail)
 	r.GET("/sixhours", c.GetSix)
+	r.GET("/mostapps", c.GetMostApps)
 }
 
 //============================================= 		Controller Functions	========================================================
@@ -98,6 +100,8 @@ func (c *doctorControllerImpl) GetAvail(ctx *gin.Context) {
 		} else {
 			ctx.JSON(http.StatusOK, res)
 		}
+	} else {
+		ctx.JSON(http.StatusOK, "INSUFFICIENT PERMISSIONS")
 	}
 	// RETURN OTHER Status
 }
@@ -113,6 +117,25 @@ func (c *doctorControllerImpl) GetSix(ctx *gin.Context) {
 	fmt.Println(claims)
 	if claims.Utype == "admin" {
 		if res, err := c.svc.SixHours(); err != nil {
+			ctx.JSON(http.StatusBadRequest, err)
+		} else {
+			ctx.JSON(http.StatusOK, res)
+		}
+	}
+	// RETURN OTHER Status
+}
+
+func (c *doctorControllerImpl) GetMostApps(ctx *gin.Context) {
+	tokenString := ctx.GetHeader("Authorization")
+	claims, err := auth.GetClaims(tokenString)
+	if err != nil {
+		// handle error
+		fmt.Println(err)
+		panic(err)
+	}
+	fmt.Println(claims)
+	if claims.Utype == "admin" {
+		if res, err := c.svc.MostApps(); err != nil {
 			ctx.JSON(http.StatusBadRequest, err)
 		} else {
 			ctx.JSON(http.StatusOK, res)

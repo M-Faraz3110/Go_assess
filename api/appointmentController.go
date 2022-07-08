@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -83,15 +84,34 @@ func (c *appointmentControllerImpl) CreateAppointment(ctx *gin.Context) {
 	}
 	fmt.Println(claims)
 	if claims.Utype == "patient" {
-		var request models.Appointment
+		var request models.TimeReq
 		if err := ctx.BindJSON(&request); err != nil {
 			// DO SOMETHING WITH THE ERROR
 			fmt.Println(err)
 			panic(err)
 		}
+		layout := "02 Jan 06 15:04"
+		stime, err := time.Parse(layout, request.Start_time)
+		if err != nil {
+			// handle error
+			fmt.Println(err)
+			panic(err)
+		}
+		etime, err := time.Parse(layout, request.End_time)
+		if err != nil {
+			// handle error
+			fmt.Println(err)
+			panic(err)
+		}
+		app := models.Appointment{
+			DocId:      request.DocId,
+			PatId:      request.PatId,
+			Start_time: stime,
+			End_time:   etime,
+		}
 		if request.PatId != claims.ID {
 			ctx.JSON(http.StatusOK, "Incorrect Pat ID")
-		} else if err := c.svc.Book(request); err != nil {
+		} else if err := c.svc.Book(app); err != nil {
 			ctx.JSON(http.StatusBadRequest, err)
 		} else {
 			ctx.JSON(http.StatusOK, "SUCCESS")
