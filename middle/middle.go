@@ -55,15 +55,8 @@ func GenerateToken(request *models.User, db *sqlx.DB) (string, error) {
 	// }
 	// check if email exists and password is correct
 	user := user{}
-	fmt.Println(request.Type)
-	hashpass, err := HashPassword(request.Password)
-	if err != nil {
-		fmt.Println(err)
-		return "", err
-	}
-	fmt.Println(hashpass)
 	cmd := fmt.Sprintf("SELECT username, password, id, user_type as type FROM users WHERE username = '%s' and user_type = '%s'", request.Username, request.Type)
-	err = db.Get(&user, cmd)
+	err := db.Get(&user, cmd)
 	if err != nil {
 		fmt.Println(err)
 		return "", err

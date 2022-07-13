@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type AppointmentController interface {
@@ -33,14 +34,15 @@ type AppointmentController interface {
 
 type appointmentControllerImpl struct {
 	svc services.AppointmentService // use this to call the appropriate service functions
+	l   *zap.SugaredLogger
 }
 
 //=============================================	   Constructor 		========================================================
 
 var _ AppointmentController = (*appointmentControllerImpl)(nil)
 
-func AppointmentControllerProvider(s services.AppointmentService) AppointmentController {
-	return &appointmentControllerImpl{svc: s}
+func AppointmentControllerProvider(s services.AppointmentService, l *zap.SugaredLogger) AppointmentController {
+	return &appointmentControllerImpl{svc: s, l: l}
 }
 
 //=============================================	  	 Router Functions		========================================================
@@ -63,12 +65,15 @@ func (c *appointmentControllerImpl) GetSlots(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		// handle error
+		c.l.Panic(err)
 		fmt.Println(err)
 		panic(err)
 	}
 	if res, err := c.svc.Slots(id); err != nil {
+		c.l.Panic(err)
 		ctx.JSON(http.StatusBadRequest, err)
 	} else {
+		c.l.Info("/slots controller SUCCESS...")
 		ctx.JSON(http.StatusOK, res)
 	}
 	// RETURN OTHER Status
@@ -110,10 +115,13 @@ func (c *appointmentControllerImpl) CreateAppointment(ctx *gin.Context) {
 			End_time:   etime,
 		}
 		if request.PatId != claims.ID {
+			c.l.Panic(err)
 			ctx.JSON(http.StatusOK, "Incorrect Pat ID")
 		} else if err := c.svc.Book(app); err != nil {
+			c.l.Panic(err)
 			ctx.JSON(http.StatusBadRequest, err)
 		} else {
+			c.l.Info("/book controller SUCCESS...")
 			ctx.JSON(http.StatusOK, "SUCCESS")
 		}
 
@@ -128,12 +136,15 @@ func (c *appointmentControllerImpl) CancelAppointment(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		// handle error
+		c.l.Panic(err)
 		fmt.Println(err)
 		panic(err)
 	}
 	if err := c.svc.Cancel(id); err != nil {
+		c.l.Panic(err)
 		ctx.JSON(http.StatusBadRequest, err)
 	} else {
+		c.l.Info("/cancel controller SUCCESS...")
 		ctx.JSON(http.StatusOK, "SUCCESS")
 	}
 	// RETURN OTHER Status
@@ -143,12 +154,15 @@ func (c *appointmentControllerImpl) GetAppointment(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		// handle error
+		c.l.Panic(err)
 		fmt.Println(err)
 		panic(err)
 	}
 	if res, err := c.svc.App(id); err != nil {
+		c.l.Panic(err)
 		ctx.JSON(http.StatusBadRequest, err)
 	} else {
+		c.l.Info("/appointment controller SUCCESS...")
 		ctx.JSON(http.StatusOK, res)
 	}
 	// RETURN OTHER Status
@@ -158,12 +172,15 @@ func (c *appointmentControllerImpl) History(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		// handle error
+		c.l.Panic(err)
 		fmt.Println(err)
 		panic(err)
 	}
 	if res, err := c.svc.History(id); err != nil {
+		c.l.Panic(err)
 		ctx.JSON(http.StatusBadRequest, err)
 	} else {
+		c.l.Info("/history controller SUCCESS...")
 		ctx.JSON(http.StatusOK, res)
 	}
 	// RETURN OTHER Status

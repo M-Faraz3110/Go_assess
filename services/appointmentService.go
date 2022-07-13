@@ -5,26 +5,29 @@ import (
 	"clinic/repository"
 	"errors"
 	"fmt"
+
+	"go.uber.org/zap"
 )
 
 type AppointmentService interface {
 	Slots(id int) ([]models.Appointment, error)
 	Cancel(id int) error
 	History(id int) ([]models.Appointment, error)
-	MostApps() ([]models.Mostapps, error)
+	// MostApps() ([]models.Mostapps, error)
 	Book(app models.Appointment) error
 	App(id int) (models.Appointment, error)
 }
 
 type appointmentServiceImpl struct {
 	ar repository.AppointmentRepository
+	l  *zap.SugaredLogger
 }
 
 //=============================================	   Constructor		========================================================
 var _ AppointmentService = (*appointmentServiceImpl)(nil)
 
-func AppointmentServiceProvider(ar repository.AppointmentRepository) AppointmentService {
-	return &appointmentServiceImpl{ar: ar}
+func AppointmentServiceProvider(ar repository.AppointmentRepository, l *zap.SugaredLogger) AppointmentService {
+	return &appointmentServiceImpl{ar: ar, l: l}
 }
 
 //=============================================	 	SVC Functions		========================================================
@@ -70,11 +73,12 @@ func (c *appointmentServiceImpl) Slots(id int) ([]models.Appointment, error) {
 	// 	End_time:   time.Date(now.Year(), now.Month(), now.Day(), 17, 0, 0, 0, time.Local),
 	// }
 	// res = append(res, slot)
+	c.l.Info("/slots service SUCCESS...")
 	return res, nil
 }
 
 func (c *appointmentServiceImpl) Cancel(id int) error {
-
+	c.l.Info("/cancel service SUCCESS...")
 	return c.ar.Adel(id)
 
 }
@@ -83,17 +87,19 @@ func (c *appointmentServiceImpl) History(id int) ([]models.Appointment, error) {
 
 	apps := []models.Appointment{}
 	c.ar.Aselall(&apps, id)
+	c.l.Info("/history service SUCCESS...")
 	return apps, nil
 
 }
 
-func (c *appointmentServiceImpl) MostApps() ([]models.Mostapps, error) {
+// func (c *appointmentServiceImpl) MostApps() ([]models.Mostapps, error) {
 
-	apps := []models.Mostapps{}
-	c.ar.AMostApps(&apps)
-	return apps, nil
+// 	apps := []models.Mostapps{}
+// 	c.ar.AMostApps(&apps)
+// 	c.l.Info("/mostapps service SUCCESS...")
+// 	return apps, nil
 
-}
+// }
 
 func (c *appointmentServiceImpl) Book(app models.Appointment) error {
 	// layout := "02 Jan 06 15:04"
@@ -107,7 +113,9 @@ func (c *appointmentServiceImpl) Book(app models.Appointment) error {
 	// }
 	diff := app.End_time.Sub(app.Start_time)
 	fmt.Println(diff.Minutes())
+	c.l.Info("/Book service SUCCESS...")
 	if diff.Minutes() < 1 {
+		c.l.Panic(errors.New("time invalid"))
 		return errors.New("time invalid")
 	}
 	return c.ar.Ains(&app, diff.Minutes())
@@ -117,6 +125,7 @@ func (c *appointmentServiceImpl) Book(app models.Appointment) error {
 func (c *appointmentServiceImpl) App(id int) (models.Appointment, error) {
 	app := models.Appointment{}
 	c.ar.Asel(&app, id)
+	c.l.Info("/app service SUCCESS...")
 	return app, nil
 
 }

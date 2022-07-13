@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type DoctorController interface {
@@ -34,14 +35,15 @@ type DoctorController interface {
 
 type doctorControllerImpl struct {
 	svc services.DoctorService // use this to call the appropriate service functions
+	l   *zap.SugaredLogger
 }
 
 //=============================================	   Constructor	========================================================
 
 var _ DoctorController = (*doctorControllerImpl)(nil)
 
-func DoctorControllerProvider(s services.DoctorService) DoctorController {
-	return &doctorControllerImpl{svc: s}
+func DoctorControllerProvider(s services.DoctorService, l *zap.SugaredLogger) DoctorController {
+	return &doctorControllerImpl{svc: s, l: l}
 }
 
 //=============================================	  	 Router Functions		========================================================
@@ -65,12 +67,15 @@ func (c *doctorControllerImpl) GetDoctor(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		// handle error
+		c.l.Panic(err)
 		fmt.Println(err)
 		panic(err)
 	}
 	if res, err := c.svc.Doctor(id); err != nil {
+		c.l.Panic(err)
 		ctx.JSON(http.StatusBadRequest, err)
 	} else {
+		c.l.Info("/doctor controller SUCCESS...")
 		ctx.JSON(http.StatusOK, res)
 	}
 	// RETURN OTHER Status
@@ -78,8 +83,10 @@ func (c *doctorControllerImpl) GetDoctor(ctx *gin.Context) {
 
 func (c *doctorControllerImpl) GetDoctors(ctx *gin.Context) {
 	if res, err := c.svc.Doctors(); err != nil {
+		c.l.Panic(err)
 		ctx.JSON(http.StatusBadRequest, err)
 	} else {
+		c.l.Info("/doctor/:id controller SUCCESS...")
 		ctx.JSON(http.StatusOK, res)
 	}
 	// RETURN OTHER Status
@@ -91,13 +98,16 @@ func (c *doctorControllerImpl) GetAvail(ctx *gin.Context) {
 	if err != nil {
 		// handle error
 		fmt.Println(err)
+		c.l.Panic(err)
 		panic(err)
 	}
 	fmt.Println(claims)
 	if claims.Utype == "admin" {
 		if res, err := c.svc.Avail(); err != nil {
+			c.l.Panic(err)
 			ctx.JSON(http.StatusBadRequest, err)
 		} else {
+			c.l.Info("/availability controller SUCCESS...")
 			ctx.JSON(http.StatusOK, res)
 		}
 	} else {
@@ -111,14 +121,17 @@ func (c *doctorControllerImpl) GetSix(ctx *gin.Context) {
 	claims, err := auth.GetClaims(tokenString)
 	if err != nil {
 		// handle error
+		c.l.Panic(err)
 		fmt.Println(err)
 		panic(err)
 	}
 	fmt.Println(claims)
 	if claims.Utype == "admin" {
 		if res, err := c.svc.SixHours(); err != nil {
+			c.l.Panic(err)
 			ctx.JSON(http.StatusBadRequest, err)
 		} else {
+			c.l.Info("/getsix controller SUCCESS...")
 			ctx.JSON(http.StatusOK, res)
 		}
 	}
@@ -130,14 +143,17 @@ func (c *doctorControllerImpl) GetMostApps(ctx *gin.Context) {
 	claims, err := auth.GetClaims(tokenString)
 	if err != nil {
 		// handle error
+		c.l.Panic(err)
 		fmt.Println(err)
 		panic(err)
 	}
 	fmt.Println(claims)
 	if claims.Utype == "admin" {
 		if res, err := c.svc.MostApps(); err != nil {
+			c.l.Panic(err)
 			ctx.JSON(http.StatusBadRequest, err)
 		} else {
+			c.l.Info("/mostapps controller SUCCESS...")
 			ctx.JSON(http.StatusOK, res)
 		}
 	}

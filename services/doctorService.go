@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strconv"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 type DoctorService interface {
@@ -18,13 +20,14 @@ type DoctorService interface {
 
 type doctorServiceImpl struct {
 	dr repository.DoctorRepository
+	l  *zap.SugaredLogger
 }
 
 //=============================================	   Constructor 	========================================================
 var _ DoctorService = (*doctorServiceImpl)(nil)
 
-func DoctorServiceProvider(dr repository.DoctorRepository) DoctorService {
-	return &doctorServiceImpl{dr: dr}
+func DoctorServiceProvider(dr repository.DoctorRepository, l *zap.SugaredLogger) DoctorService {
+	return &doctorServiceImpl{dr: dr, l: l}
 }
 
 //=============================================	 	SVC Functions		========================================================
@@ -35,6 +38,7 @@ func (c *doctorServiceImpl) Doctor(id int) (models.Doctor, error) {
 
 	doc := models.Doctor{}
 	c.dr.Dsel(&doc, id)
+	c.l.Info("/doctor/:id service SUCCESS...")
 	return doc, nil
 
 }
@@ -42,6 +46,7 @@ func (c *doctorServiceImpl) Doctor(id int) (models.Doctor, error) {
 func (c *doctorServiceImpl) Doctors() ([]models.Doctor, error) {
 	docs := []models.Doctor{}
 	c.dr.Dselall(&docs)
+	c.l.Info("/doctors service SUCCESS...")
 	return docs, nil
 }
 
@@ -75,6 +80,7 @@ func (c *doctorServiceImpl) Avail() ([]models.Available, error) {
 			Times: avail,
 		})
 	}
+	c.l.Info("/avail service SUCCESS...")
 	return docs, nil
 }
 
@@ -91,11 +97,13 @@ func (c *doctorServiceImpl) Avail() ([]models.Available, error) {
 func (c *doctorServiceImpl) SixHours() ([]models.Doctor, error) {
 	docs := []models.Doctor{}
 	c.dr.Dsixhours(&docs)
+	c.l.Info("/sixhours service SUCCESS...")
 	return docs, nil
 }
 
 func (c *doctorServiceImpl) MostApps() ([]models.Mostapps, error) {
 	docs := []models.Mostapps{}
 	c.dr.DMostApps(&docs)
+	c.l.Info("/mostapps service SUCCESS...")
 	return docs, nil
 }
