@@ -3,6 +3,7 @@ package repository
 import (
 	"clinic/middle"
 	"clinic/models"
+	"errors"
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
@@ -35,6 +36,10 @@ func (c *userrepositoryImpl) UserIns(user *models.User) error {
 		c.l.Info("invalid password...")
 		fmt.Println(err)
 		return err
+	}
+	if user.Type != "doctor" && user.Type != "patient" && user.Type != "admin" {
+		c.l.Info("invalid type...")
+		return errors.New("INVALID USER TYPE")
 	}
 	cmd := fmt.Sprintf("INSERT INTO users (username, password, user_type) values ('%s', '%s', '%s')", user.Username, hashpass, user.Type)
 	_, err = c.db.Exec(cmd)

@@ -3,6 +3,7 @@ package middle
 import (
 	"clinic/auth"
 	"clinic/models"
+	"errors"
 	"fmt"
 
 	"github.com/gin-gonic/gin"
@@ -59,7 +60,7 @@ func GenerateToken(request *models.User, db *sqlx.DB) (string, error) {
 	err := db.Get(&user, cmd)
 	if err != nil {
 		fmt.Println(err)
-		return "", err
+		return "", errors.New("INVALID USER")
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password))
 	if err != nil {
