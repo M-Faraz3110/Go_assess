@@ -3,6 +3,7 @@ package services
 import (
 	"clinic/models"
 	"clinic/repository"
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -39,6 +40,10 @@ func (c *doctorServiceImpl) Doctor(id int) (models.Doctor, error) {
 	doc := models.Doctor{}
 	c.dr.Dsel(&doc, id)
 	c.l.Info("/doctor/:id service SUCCESS...")
+	if doc.Id == 0 {
+		c.l.Info("/doctor/:id INVALID ID")
+		return doc, errors.New("INVALID ID")
+	}
 	return doc, nil
 
 }

@@ -114,8 +114,8 @@ func (c *appointmentServiceImpl) Book(app models.Appointment) error {
 	diff := app.End_time.Sub(app.Start_time)
 	fmt.Println(diff.Minutes())
 	c.l.Info("/Book service SUCCESS...")
-	if diff.Minutes() < 1 {
-		c.l.Panic(errors.New("time invalid"))
+	if diff.Minutes() < 15 || diff.Minutes() > 120 {
+		c.l.Info("/book time invalid")
 		return errors.New("time invalid")
 	}
 	return c.ar.Ains(&app, diff.Minutes())
